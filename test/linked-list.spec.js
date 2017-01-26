@@ -1,178 +1,201 @@
-const Node = require('../src/node');
-const LinkedList = require('../src/linked-list');
+const Node = require('./node');
 
-describe('LinkedList', () => {
-    describe('#constructor', () => {
-        const list = new LinkedList();
+class LinkedList {
+  constructor() {
+    this.length = 0;
+    this._head = null;
+    this._tail = null;
+  }
 
-        it('assign 0 to this.length', () => {
-            expect(list.length).to.equal(0);
-        })
-    });
+  append(data) {
+    if (this.isEmpty()) {
+      this.length++;
+      this._head = new Node(data);
+      this._tail = this._head;
 
-    describe('#append', () => {
-        it('should assign any nodes to this._head and this._tail if list is empty', () => {
-            const data = 42;
+      return this;
+    }
 
-            const list = new LinkedList();
+    if (this.length === 1) {
+      this.length++;
+      this._tail = new Node(data, this._head);
+      this._head.next = this._tail;
 
-            list.append(data);
+      return this;
+    }
 
-            expect(list._tail).to.be.an.instanceof(Node)
-            expect(list._head).to.be.an.instanceof(Node)
-        });
+    this.length++;
+    this._tail.next = new Node(data, this._tail);
+    this._tail = this._tail.next;
 
-        it('should add new data to the end of list', () => {
-            const list = new LinkedList();
 
-            list.append(123);
-            list.append(413);
+    return this;
+  }
 
-            expect(list.length).to.equal(2);
-            expect(list.tail()).to.equal(413);
-            expect(list.head()).to.equal(123);
-        });
+  head() {
+    if (this._head) {
+      return this._head.data;
+    }
 
-    });
-    describe('#head', () => {
-        const list = new LinkedList();
-        it('should return data from the this.head', () => {
-            const data = 13;
+    return null;
+  }
 
-            list.append(data);
+  tail() {
+    if (this._tail) {
+      return this._tail.data;
+    }
 
-            expect(list.head()).to.equal(data)
-        });
-    });
-    describe('#tail', () => {
-        const list = new LinkedList();
-        it('should return data from the this.tail', () => {
-            const data = 31;
+    return null;
+  }
 
-            list.append(data);
+  at(index) {
+    let i = 0;
+    let item = this._head;
+    while (item !== null && i < index) {
+      i++;
+      item = item.next;
+    }
 
-            expect(list.tail()).to.equal(data)
-        });
-    });
-    describe('#at', () => {
-        it('should return Node.data by index', () => {
-            const list = new LinkedList();
+    return item && item.data;
+  }
 
-            list.append(1);
-            list.append(123);
-            list.append(444);
+  insertAt(index, data) {
+    if (index < 0 || index > this.length) {
+      return this;
+    }
 
-            expect(list.at(0)).to.equal(1);
-            expect(list.at(1)).to.equal(123);
-            expect(list.at(2)).to.equal(444);
+    if (index === this.length) {
+      this.append(data);
 
-        });
-    });
-    describe('#insertAt', () => {
-        it('should insert data by index', () => {
-            const list = new LinkedList();
-            const data = 34;
-            const position = 1;
+      return this;
+    }
 
-            list.append(32);
-            list.append(47);
+    if (index === 0) {
+      this.length++;
+      const tmp = new Node(data, null, this._head);
+      this._head.prev = tmp;
+      this._head = tmp;
 
-            list.insertAt(position, data);
+      return this;
+    }
 
-            expect(list.at(position)).to.equal(data);
-        });
-    });
-    describe('#isEmpty', () => {
-        it('should return true if list is empty', () => {
-            const list = new LinkedList();
+    if (index === this.length - 1) {
+      this.length++;
+      const tmp = new Node(data, this._tail.prev, this._tail);
+      this._tail.prev = tmp;
 
-            expect(list.isEmpty()).to.be.true;
+      if (tmp.prev) {
+        tmp.prev.next = tmp;
+      }
 
-            list.append(32);
+      return this;
+    }
 
-            expect(list.isEmpty()).to.be.false;
-        });
-    });
+    this.length++;
+    let i = 0;
+    let item = this._head;
+    while (i !== index - 1) {
+      item = item.next;
+      i++;
+    }
 
-    describe('#clear', () => {
-        it('should clear the list', () => {
-            const list = new LinkedList();
+    const tmp = item.next;
+    item.next = new Node(data, item, item.next);
+    if (tmp) {
+      tmp.prev = item.next;
+    }
 
-            list.append(32);
-            list.append(47);
+    return this;
+  }
 
-            list.clear();
+  isEmpty() {
+    return this.length === 0;
+  }
 
-            expect(list.head()).to.equal(null);
-            expect(list.tail()).to.equal(null);
-            expect(list.length).to.equal(0);
-        });
-    });
-    describe('#deleteAt', () => {
-        it('should delete element by index', () => {
-            const list = new LinkedList();
+  clear() {
+    this.length = 0;
+    this._head = null;
+    this._tail = null;
 
-            list.append(1);
-            list.append(2);
-            list.append(3);
-            list.append(4);
-            list.append(5);
+    return this;
+  }
 
-            list.deleteAt(2);
+  deleteAt(index) {
+    if (index < 0 || index > this.length - 1) {
+      return this;
+    }
 
-            expect(list.at(2)).to.equal(4);
-        });
-    });
-    describe('#reverse', () => {
-        it('should reverse the list', () => {
-            const list = new LinkedList();
+    if (this.length === 1) {
+      this.clear();
 
-            list.append(1);
-            list.append(2);
-            list.append(3);
-            list.append(4);
-            list.append(5);
-            list.append(6);
+      return this;
+    }
 
-            list.reverse();
+    if (index === 0) {
+      this.length--;
+      this._head = this._head.next;
+      this._head.prev = null;
 
-            expect(list.head()).to.equal(6);
-            expect(list.tail()).to.equal(1);
+      return this;
+    }
 
-            expect(list.at(1)).to.equal(5);
-            expect(list.at(2)).to.equal(4);
-            expect(list.at(3)).to.equal(3);
-            expect(list.at(4)).to.equal(2);
-        });
-    });
-    describe('#indexOf', () => {
-        it('should return index of element if data is found', () => {
-            const list = new LinkedList();
+    if (index === this.length - 1) {
+      this.length--;
+      this._tail = this._tail.prev;
+      this._tail.next = null;
 
-            list.append(3);
-            list.append(7);
+      return this;
+    }
 
-            expect(list.indexOf(3)).to.equal(0);
-            expect(list.indexOf(7)).to.equal(1);
-        });
+    this.length--;
+    let i = 0;
+    let item = this._head;
+    while (i !== index - 1) {
+      item = item.next;
+      i++;
+    }
 
-        it('should return -1 if data not found', () => {
-            const list = new LinkedList();
+    item.prev.next = item.next;
+    item.next.prev = item.prev;
 
-            list.append(7);
+    return this;
+  }
 
-            expect(list.indexOf(3)).to.equal(-1);
-        })
-    });
-    describe('chaining', () => {
-        it('append reverse deleteAt insertAt methods should be chainable', () => {
-            const list = new LinkedList();
+  reverse() {
+    let left = this._head;
+    let right = this._tail;
+    let i = 0;
+    let k = this.length - 1;
 
-            function fn() {
-                list.append(4).reverse().deleteAt(0).clear().insertAt(0, 3);
-            }
+    while (k > i) {
+      console.log(left.data);
+      const tmp = left.data;
+      left.data = right.data;
+      right.data = tmp;
+      left = left.next;
+      right = right.prev;
+      i++;
+      k--;
+    }
 
-            expect(fn).to.not.throw();
-        })
-    })
-});
+    return this;
+  }
+
+  indexOf(data) {
+    let i = 0;
+    let item = this._head;
+
+    while (i < this.length && item.data !== data) {
+      item = item.next;
+      i++;
+    }
+
+    if (i < this.length) {
+      return i;
+    }
+
+    return -1;
+  }
+}
+
+module.exports = LinkedList;
