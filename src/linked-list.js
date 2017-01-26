@@ -8,10 +8,10 @@ class LinkedList {
   }
 
   append(data) {
-    if (!this.length) {
-      this.length = 0;
+    if (this.isEmpty()) {
+      this.length++;
       this._head = new Node(data);
-      this._tail = this._heed;
+      this._tail = this._head;
 
       return this;
     }
@@ -24,19 +24,28 @@ class LinkedList {
       return this;
     }
 
+    this.length++;
     this._tail.next = new Node(data, this._tail);
     this._tail = this._tail.next;
-    this.length++;
+
 
     return this;
   }
 
   head() {
-    return this._head.data;
+    if (this._head) {
+      return this._head.data;
+    }
+
+    return null;
   }
 
   tail() {
-    return this._tail.data;
+    if (this._tail) {
+      return this._tail.data;
+    }
+
+    return null;
   }
 
   at(index) {
@@ -63,16 +72,21 @@ class LinkedList {
 
     if (index === 0) {
       this.length++;
-      this._head.prev = new Node(data, null, this._head);
-      this._head = this._head.prev;
+      const tmp = new Node(data, null, this._head);
+      this._head.prev = tmp;
+      this._head = tmp;
 
       return this;
     }
 
     if (index === this.length - 1) {
       this.length++;
-      this._tail.next = new Node(data, this._tail, null);
-      this._tail = this._tail.next;
+      const tmp = new Node(data, this._tail.prev, this._tail);
+      this._tail.prev = tmp;
+
+      if (tmp.prev) {
+        tmp.prev.next = tmp;
+      }
 
       return this;
     }
@@ -102,6 +116,8 @@ class LinkedList {
     this.length = 0;
     this._head = null;
     this._tail = null;
+
+    return this;
   }
 
   deleteAt(index) {
@@ -148,13 +164,18 @@ class LinkedList {
   reverse() {
     let left = this._head;
     let right = this._tail;
+    let i = 0;
+    let k = this.length - 1;
 
-    while (left !== right) {
+    while (k > i) {
+      console.log(left.data);
       const tmp = left.data;
       left.data = right.data;
       right.data = tmp;
       left = left.next;
       right = right.prev;
+      i++;
+      k--;
     }
 
     return this;
